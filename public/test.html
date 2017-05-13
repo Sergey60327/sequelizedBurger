@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+
+	<link href="https://fonts.googleapis.com/css?family=Crafty+Girls|Fontdiner+Swanky" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Baloo" rel="stylesheet">
+	<!-- Compiled and minified Materialize CSS -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.0/css/materialize.min.css">
+
+	<link rel="stylesheet" href="assets/css/burger_style.css" type="text/css" />
+	<title> Devour Menu</title>
+</head>
+
+<body>
+	<img src="assets/img/burger.png" width="400px" id="burger">
+
+  <h1>Eat-Da-Burger!</h1>
+
+  <main>
+    <div class="container">
+      <div class="row">
+        <div class="col s6">
+
+              <div>
+                <form action="/burgers/{{this.id}}?_method=PUT" method="POST">
+                  <button type="submit" class='burgerAvailable'> </button>
+                </form>
+              </div>
+
+        <div class="col s6">
+          <div class='burgerEaten'>
+
+      </div>
+    </div>
+  </main>
+
+
+
+  <div class="row">
+    <div class="col s12">
+      <form action="/burgers" method="POST">
+        <input type="text" id="name" name="burger_name" placeholder="Enter your favorite burger here">
+        <button type="submit" class="addBurgerButton">Submit-Da-Burger</button>
+      </form>
+    </div>
+  </div>
+
+
+</body>
+</html>
