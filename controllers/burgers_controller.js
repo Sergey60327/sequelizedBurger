@@ -1,40 +1,123 @@
-// Pull in required dependencies
-var express = require('express');
-var router = express.Router();
+// Pull in the Burger model
+var db = require("../models");
+var log = require("loglevel").getLogger("burgers_controller");
 
-// Import the model (burger.js) to use its database functions.
-var burger = require('../models/burger.js');
+module.exports = function(app) {
+  // Retrieve the list of all burgers in the database
+  app.get("/", function(req, res) {
+    log.debug("___ENTER GET /___");
 
-// Create the routes and associated logic
-router.get('/', function(req, res) {
-  burger.allin (function(data) {
-    var hbsObject = {
-      burgers: data
-    };
-     console.log(hbsObject);
-    res.render('index', hbsObject);
+    db.Burger.findAll({
+      include: [ db.Customer ],
+      order: "name ASC"
+    })
+    .then(function(data) {
+      log.debug("data = " + JSON.stringify(data));
+
+      var hbsObject = {
+        burgers: data
+      };
+      console.log(hbsObject);
+      res.render('index', hbsObject);
+    })
+    .catch(function(err) {
+      log.error("ERR = " + err);
+      res.json({status: "ERROR", message: err});
+    });
   });
-});
 
-router.post('/burgers', function(req, res) {
-  burger.create([
-    'burger_name'
-  ], [
-    req.body.burger_name
-  ], function(data) {
-    res.redirect('/');
+  // Create a new burger entry
+  app.post("/burgers", function(req, res) {
+    log.debug("___ENTER POST /burgers___");
+
+    db.Burger.create(req.body)
+    .then(function(burger) {
+      res.redirect("/");
+    })
+    .catch(function(err) {
+      log.error("ERR = " + err);
+      res.json({status: "ERROR", message: err});
+    });
   });
-});
 
-router.put('/burgers/:id', function(req, res) {
-  var condition = 'id = ' + req.params.id;
+  // Update an existing burger entry
+  app.put("/burgers/:id", function(req, res) {
+    log.debug("___ENTER PUT /burgers:id___");
 
-  burger.update({
-    devoured: true
-  }, condition, function(data) {
-    res.redirect('/');
+    log.debug("id = " + req.params.id);
+    log.debug("customer = " + JSON.stringify(req.body.customerName));
+
+    var burgerID = req.params.id;
+    var customerName = req.body.customerName;
+
+    db.Customer.findAll({
+      where: {
+        name: customerName
+      }
+    })
+    .then(function(customer) {
+      // Check if customer exists
+      if (customer.length === 0) {
+        log.debug("customer does not exist!");
+
+        // Create new customer
+        db.Customer.create({
+          name: customerName
+        })
+        .then(function(newCustomer) {
+          log.debug("customer created = " + JSON.stringify(newCustomer));
+
+          // Add customer reference to burger
+          db.Burger.update(
+            {
+              devoured: true,
+              CustomerId: newCustomer.id
+            },
+            {
+              where: {
+                id: req.params.id
+              }
+            }
+          ).then(function(burger) {
+            res.redirect('/');
+          })
+          .catch(function (err) {
+            log.error("ERR = " + err);
+            res.json({status: "ERROR", message: err});
+          });
+        })
+        .catch(function(error) {
+          log.debug("ERROR: Error on customer create -- " + JSON.stringify(error));
+          res.json({status: "ERROR", message: error});
+        })
+      } else { // customer exists
+        log.debug("customer exists = " + JSON.stringify(customer));
+
+        // Add customer reference to burger
+        db.Burger.update(
+          {
+            devoured: true,
+            CustomerId: customer[0].id
+          },
+          {
+            where: {
+              id: req.params.id
+            }
+          }
+        ).then(function(burger) {
+          res.redirect('/');
+        })
+        .catch(function (err) {
+          log.error("ERR = " + err);
+          res.json({status: "ERROR", message: err});
+        });
+      } // end customer exists
+    })
+    .catch(function(error) {
+      if(error) {
+        log.debug("ERROR: Error on customer query -- " + JSON.stringify(error));
+        res.json({status: "ERROR", message: error});
+      }
+    });
   });
-});
-
-// Export routes for server.js to use.
-module.exports = router;
+};
