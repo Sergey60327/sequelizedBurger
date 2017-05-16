@@ -1,30 +1,23 @@
-module.exports = function(sequelize, DataTypes) {
-  // Define the Burger Sequelize model
-  var Burger = sequelize.define("Burger",
-    {
-      // The name identifying the burger
-      name: {
-        type: DataTypes.STRING,
-        allowNull: false
-      },
-      // The availability boolean
-      devoured: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false
-      }
-    }, {
-      classMethods: {
-        associate: function(models) {
-          // Burger is associated with one customer
-          Burger.belongsTo(models.Customer, {
-            onDelete: "CASCADE",
-            foreignKey: {
-              allowNull: true
-            }
-          });
-        }
-      }
-    });
+// Import the ORM to create functions that will interact with the database.
+var orm = require("../config/orm.js");
 
-  return Burger;
+var burger = {
+  allin: function(cb) {
+    orm.allin("burgers", function(res) {
+      cb(res);
+    });
+  },
+  // The variables cols and vals are arrays.
+  create: function(cols, vals, cb) {
+    orm.create("burgers", cols, vals, function(res) {
+      cb(res);
+    });
+  },
+  update: function(objColVals, condition, cb) {
+    orm.update("burgers", objColVals, condition, function(res) {
+      cb(res);
+    });
+  }
 };
+// Export the database functions for the controller (catsController.js).
+module.exports = burger;
