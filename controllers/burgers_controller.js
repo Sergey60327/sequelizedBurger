@@ -1,40 +1,61 @@
 // Pull in required dependencies
-var express = require('express');
-var router = express.Router();
+var db = require("../models");
+var log = require("loglevel").getLogger("burgers_controller");
 
-// Import the model (burger.js) to use its database functions.
-var burger = require('../models/burger.js');
+module.exports = function(app) {
+ // Retrieve the list of all burgers in the database
+ app.get("/", function(req, res) {
+     log.debug("___ENTER GET /___");
 
-// Create the routes and associated logic
-router.get('/', function(req, res) {
-  burger.allin (function(data) {
+db.Burger.findAll (function(data) {
     var hbsObject = {
       burgers: data
     };
      console.log(hbsObject);
     res.render('index', hbsObject);
+  })
+  .catch(function(err) {
+      log.error("ERR = " + err);
+      res.json({status: "ERROR", message: err});
   });
 });
 
-router.post('/burgers', function(req, res) {
-  burger.create([
-    'burger_name'
-  ], [
-    req.body.burger_name
-  ], function(data) {
+
+// Create a new burger entry
+app.post('/burgers', function(req, res) {
+ log.debug("___ENTER POST /burgers___");
+  db.Burger.create(req.body)
+  .then(function(burger) {
     res.redirect('/');
+})
+.catch(function(err) {
+     log.error("ERR = " + err);
+     res.json({status: "ERROR", message: err});
   });
 });
 
-router.put('/burgers/:id', function(req, res) {
-  var condition = 'id = ' + req.params.id;
+// Update an existing burger entry
+app.put('/burgers/:id', function(req, res) {
+log.debug("___ENTER PUT /burgers:id___");
 
-  burger.update({
+log.debug("id = " + req.params.id);
+
+var burgerID = req.params.id;
+
+db.Burger.update({
     devoured: true
-  }, condition, function(data) {
+  },
+  {
+    where: {
+      id: req.params.id
+      }
+    }
+  ).then (function(burger) {
     res.redirect('/');
   });
-});
-
-// Export routes for server.js to use.
-module.exports = router;
+})
+.catch(function (err) {
+            log.error("ERR = " + err);
+            res.json({status: "ERROR", message: err});
+    });
+};
