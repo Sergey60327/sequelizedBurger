@@ -3,7 +3,7 @@ CREATE DATABASE burgers_db3;
 USE burgers_db3;
 
 CREATE TABLE burgers(
-  
+
   id INT NOT NULL AUTO_INCREMENT,
   burger_name VARCHAR(255) NOT NULL,
   devoured boolean DEFAULT false,

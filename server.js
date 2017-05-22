@@ -47,6 +47,6 @@ require('./controllers/burgers_controller.js')(app);
 // Include the {force: true} parameter if you need to update the models
 db.sequelize.sync().then(function() {
   app.listen(port, function() {
-    console.log("My-Burger-Sequel is listening on PORT " + port);
+    console.log("Sequelized burger is listening on PORT " + port);
   });
 });

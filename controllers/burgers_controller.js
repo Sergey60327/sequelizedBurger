@@ -7,16 +7,12 @@ module.exports = function(app) {
  app.get("/", function(req, res) {
      log.debug("___ENTER GET /___");
 
-db.Burger.findAll (function(data) {
+db.Burger.findAll({}).then(function(data) {
     var hbsObject = {
       burgers: data
     };
      console.log(hbsObject);
     res.render('index', hbsObject);
-  })
-  .catch(function(err) {
-      log.error("ERR = " + err);
-      res.json({status: "ERROR", message: err});
   });
 });
 
@@ -54,8 +50,4 @@ db.Burger.update({
     res.redirect('/');
   });
 })
-.catch(function (err) {
-            log.error("ERR = " + err);
-            res.json({status: "ERROR", message: err});
-    });
 };
